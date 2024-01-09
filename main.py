@@ -1,12 +1,10 @@
 import os
 import asyncio
 import streamlit as st
-from dotenv import load_dotenv
 from openai import AsyncOpenAI
 import tempfile
 
 # Load environment variables
-load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # Initialize OpenAI client

@@ -14,6 +14,9 @@ st.title('Text to Speech Conversion')
 
 # Text input
 user_input = st.text_area("Enter the text you want to convert to speech:")
+# Voice selection
+voices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+selected_voice = st.selectbox("Select a voice:", voices)
 
 # Button for conversion
 if st.button('Convert to Speech'):
@@ -23,7 +26,7 @@ if st.button('Convert to Speech'):
             async def create_speech():
                 response = await client.audio.speech.create(
                     model="tts-1-hd",
-                    voice="onyx",
+                    voice=selected_voice,
                     input=user_input,
                 )
                 return response

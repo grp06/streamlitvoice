@@ -1,2 +1,4 @@
+moviepy==1.0.3
 streamlit==1.29.0
 openai==1.1.0
+pytube==15.0.0

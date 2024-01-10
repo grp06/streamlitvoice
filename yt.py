@@ -36,7 +36,14 @@ def yt_wrapper():
             resized_output_path = f"{trimmed_output_path.rsplit('.', 1)[0]}_resized.mp4"
             cropped_clip.write_videofile(resized_output_path)
 
-            st.success(f'Video downloaded, trimmed and resized successfully at {resized_output_path}')
+            # Provide a download button for the video
+            with open(resized_output_path, "rb") as file:
+                btn = st.download_button(
+                    label="Download Video",
+                    data=file,
+                    file_name="resized_video.mp4",
+                    mime="video/mp4",
+                )
 
         except Exception as e:
             st.error(f'Error: {e}')

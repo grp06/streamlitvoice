@@ -10,6 +10,15 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 # Initialize OpenAI client
 print(OPENAI_API_KEY)
 client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+
+async def create_speech(user_input, selected_voice):
+    response = await client.audio.speech.create(
+        model="tts-1-hd",
+        voice=selected_voice,
+        input=user_input,
+    )
+    return response
+
 def tts_wrapper():
     st.title('Text to Speech Conversion')
 
@@ -24,15 +33,9 @@ def tts_wrapper():
         if user_input:
             try:
                 # OpenAI TTS API call
-                async def create_speech():
-                    response = await client.audio.speech.create(
-                        model="tts-1-hd",
-                        voice=selected_voice,
-                        input=user_input,
-                    )
-                    return response
-
-                response = asyncio.run(create_speech())
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                response = loop.run_until_complete(create_speech(user_input, selected_voice))
 
                 # Save the response (audio data) to a temporary file
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:

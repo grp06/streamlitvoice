@@ -3,10 +3,9 @@ import streamlit as st
 from openai import OpenAI
 
 # Load environment variables
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
 
 # Initialize OpenAI client
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 prompt = '''
@@ -23,7 +22,8 @@ Do not put anything like this: "Certainly! Here are the enhanced versions of the
 
 '''
  
-def img_gen_wrapper():
+def img_gen_wrapper(api_key):
+    client = OpenAI(api_key=api_key)
     st.title('Image Generation')
 
     # Text input

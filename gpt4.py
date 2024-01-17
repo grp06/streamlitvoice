@@ -2,26 +2,28 @@ import os
 import streamlit as st
 from openai import OpenAI
 
-# Load environment variables
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-# Initialize OpenAI client
-client = OpenAI(api_key=OPENAI_API_KEY)
 
-def gpt4_wrapper():
+def gpt4_wrapper(api_key):
     st.title('GPT-4 Prompt')
+    client = OpenAI(api_key=api_key)
+    # System prompt text input
+    system_prompt = st.text_area("Enter your system prompt:", value="You are a helpful assistant.")
 
-    # Text input
-    user_prompt = st.text_area("Enter your prompt:")
+    # User prompt text input
+    user_prompt = st.text_area("Enter your user prompt:")
 
-    # Button for sending prompt
-    if st.button('Submit Prompt'):
+    # Button for sending prompts
+    if st.button('Submit Prompts'):
         if user_prompt:
             try:
-                # OpenAI GPT-4 API call
+                # OpenAI GPT-4 API call with system and user prompts
                 response = client.chat.completions.create(
-                    model="gpt-4-1106-preview",
-                    messages=[{"role": "user", "content": user_prompt}]
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ]
                 )
 
                 # Append the result as text in the browser
@@ -30,4 +32,4 @@ def gpt4_wrapper():
             except Exception as e:
                 st.error(f"An error occurred: {e}")
         else:
-            st.error("Please enter a prompt.")
+            st.error("Please enter a user prompt.")

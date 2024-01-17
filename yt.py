@@ -6,7 +6,8 @@ from pytube import YouTube
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from moviepy.editor import VideoFileClip
 
-def yt_wrapper():
+def yt_wrapper(api_key):
+    
     st.title('YouTube Video Downloader, Trimmer and Resizer')
 
     url = st.text_input("Enter a YouTube URL", value=st.session_state.get("url", ""))

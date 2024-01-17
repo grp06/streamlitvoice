@@ -1,17 +1,12 @@
 import os
 import asyncio
 import streamlit as st
-from openai import AsyncOpenAI
+from openai import OpenAI
 import tempfile
 
-# Load environment variables
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-# Initialize OpenAI client
-print(OPENAI_API_KEY)
-client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-
-async def create_speech(user_input, selected_voice):
+async def create_speech(user_input, selected_voice,api_key):
+    client = OpenAI(api_key=api_key)
     response = await client.audio.speech.create(
         model="tts-1-hd",
         voice=selected_voice,
@@ -19,8 +14,9 @@ async def create_speech(user_input, selected_voice):
     )
     return response
 
-def tts_wrapper():
+def tts_wrapper(api_key):
     st.title('Text to Speech Conversion')
+
 
     # Text input
     user_input = st.text_area("Enter the text you want to convert to speech:", value=st.session_state.get("user_input", ""))
@@ -35,7 +31,7 @@ def tts_wrapper():
                 # OpenAI TTS API call
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                response = loop.run_until_complete(create_speech(user_input, selected_voice))
+                response = loop.run_until_complete(create_speech(user_input, selected_voice, api_key))
 
                 # Save the response (audio data) to a temporary file
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:

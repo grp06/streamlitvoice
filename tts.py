@@ -7,7 +7,7 @@ import tempfile
 
 async def create_speech(user_input, selected_voice,api_key):
     client = OpenAI(api_key=api_key)
-    response = await client.audio.speech.create(
+    response = client.audio.speech.create(
         model="tts-1-hd",
         voice=selected_voice,
         input=user_input,

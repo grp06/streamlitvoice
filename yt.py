@@ -5,6 +5,8 @@ import streamlit as st
 from pytube import YouTube
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from moviepy.editor import VideoFileClip
+import subprocess
+from datetime import datetime
 
 def yt_wrapper(api_key):
     
@@ -27,34 +29,59 @@ def yt_wrapper(api_key):
             end_min, end_sec = map(int, end_time.split(':'))
             start_time_sec = start_min * 60 + start_sec
             end_time_sec = end_min * 60 + end_sec
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            base_output_path = f"{output_path.rsplit('.', 1)[0]}_{timestamp}"
 
-            trimmed_output_path = f"{output_path.rsplit('.', 1)[0]}_trimmed.mp4"
-            ffmpeg_extract_subclip(output_path, start_time_sec, end_time_sec, targetname=trimmed_output_path)
+            trimmed_output_path = f"{base_output_path}_trimmed.mp4"
+            resized_output_path = f"{base_output_path}_resized.mp4"
 
+            # Use ffmpeg command directly to trim the video
+            subprocess.call([
+                'ffmpeg', '-i', output_path,
+                '-ss', str(start_time_sec),
+                '-to', str(end_time_sec),
+                '-c:v', 'libx264', '-preset', 'slow',
+                '-c:a', 'aac', '-b:a', '192k',
+                '-strict', '-2',  # This may be necessary if aac is not enabled by default
+                trimmed_output_path
+            ])
             clip = VideoFileClip(trimmed_output_path)
-            height = clip.size[1]
-            width = int(height * 9 / 16)  # Calculate width for 9:16 aspect ratio
-
-            # Crop the video based on the selected option
+            video_height = clip.size[1]
+            target_width = int(video_height * (9 / 16))
+            target_height = video_height
+            
+            crop_filter = ''
             if crop_option == '1':
-                # Crop the left 30% of the screen
-                cropped_clip = clip.crop(x1=clip.w * 0.1, width=width)
+                # Crop starting 10% from the left side of the screen
+                crop_x = int(clip.size[0] * .05)  # 10% from the left
+                crop_filter = f'crop={target_width}:{target_height}:{crop_x}:0'
             elif crop_option == '2':
-                # Crop the center for 9:16 aspect ratio
-                cropped_clip = clip.crop(x_center=clip.w/2, width=width)
+                # Crop the center of the screen
+                crop_x = (clip.size[0] - target_width) // 2
+                crop_filter = f'crop={target_width}:{target_height}:{crop_x}:0'
             elif crop_option == '3':
-                # Crop the right 30% of the screen
-                cropped_clip = clip.crop(x1=clip.w - clip.w * 0.3 - width, width=width)
+                # Crop out the right side of the screen
+                crop_x = clip.size[0] - target_width
+                crop_filter = f'crop={target_width}:{target_height}:{crop_x}:0'
 
             resized_output_path = f"{trimmed_output_path.rsplit('.', 1)[0]}_resized.mp4"
-            cropped_clip.write_videofile(resized_output_path)
+
+            # Use ffmpeg command directly to crop and resize the video
+            subprocess.call([
+                'ffmpeg', '-i', trimmed_output_path,
+                '-vf', crop_filter,
+                '-c:v', 'libx264', '-preset', 'slow',
+                '-c:a', 'copy',
+                resized_output_path
+            ])
+
 
             # Provide a download button for the video
             with open(resized_output_path, "rb") as file:
                 btn = st.download_button(
                     label="Download Video",
                     data=file,
-                    file_name="resized_video.mp4",
+                    file_name=f"resized_video_{timestamp}.mp4",
                     mime="video/mp4",
                 )
 
